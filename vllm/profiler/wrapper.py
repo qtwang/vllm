@@ -209,7 +209,11 @@ class TorchProfilerWrapper(WorkerProfiler):
         if profiler_config.torch_profiler_dump_cuda_time_total:
             profiler_dir = profiler_config.torch_profiler_dir
             sort_key = "self_cuda_time_total"
-            table = self.profiler.key_averages().table(sort_by=sort_key)
+            # Set max_name_column_width to large value to avoid truncation
+            table = self.profiler.key_averages().table(
+                sort_by=sort_key,
+                max_name_column_width=200  # Show full operator names
+            )
 
             # Skip file write for URI paths (gs://, s3://, etc.)
             # as standard file I/O doesn't work with URI schemes
@@ -224,7 +228,9 @@ class TorchProfilerWrapper(WorkerProfiler):
         if self.dump_cpu_time_total and rank == 0:
             logger.info(
                 self.profiler.key_averages().table(
-                    sort_by="self_cpu_time_total", row_limit=50
+                    sort_by="self_cpu_time_total",
+                    row_limit=50,
+                    max_name_column_width=200  # Show full operator names
                 )
             )
 
